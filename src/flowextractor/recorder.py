@@ -1,4 +1,4 @@
-from scapy.all import sniff, Packet
+from scapy.all import *
 import datetime
 
 class PacketRecorder:
@@ -12,7 +12,7 @@ class PacketRecorder:
         else:
             print("No packets to save.")
 
-    def record(self, length: int = 120):
-        self.packets = sniff(count=length)
+    def record(self, length: int):
+        self.packets = sniff(timeout=length)
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         self.save_packets_to_file(f"recorded_packets_{timestamp}.pcap")

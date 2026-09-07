@@ -26,5 +26,11 @@ def main():
         recorder = PacketRecorder()
         recorder.record(length=args.record_length)
 
+    if args.pcap_file:
+        packets = read_pcap(args.pcap_file)
+        ssh_packets = filter_ssh_packets(packets)
+        print(f"Total packets read: {len(packets)}")
+        print(f"SSH packets found: {len(ssh_packets)}")
+
 if __name__ == "__main__":
     main()
