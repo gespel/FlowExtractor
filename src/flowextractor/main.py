@@ -10,7 +10,7 @@ def read_pcap(file_path):
 def filter_ssh_packets(packets):
     ssh_packets = []
     for pkt in packets:
-        if pkt.haslayer('TCP') and (pkt['TCP'].dport == 22 or pkt['TCP'].sport == 22):
+        if pkt['TCP'].dport == 22 or pkt['TCP'].sport == 22:
             ssh_packets.append(pkt)
     return ssh_packets
 
