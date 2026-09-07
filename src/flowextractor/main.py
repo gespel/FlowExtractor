@@ -1,4 +1,6 @@
 from scapy.utils import RawPcapReader
+from scapy.layers.l2 import Ether
+from scapy.layers.inet import IP, TCP
 import argparse
 
 def read_pcap(file_path):
@@ -10,7 +12,12 @@ def read_pcap(file_path):
 def filter_ssh_packets(packets):
     ssh_packets = []
     for pkt in packets:
-        if pkt['TCP'].dport == 22 or pkt['TCP'].sport == 22:
+        ether = Ether(pkt)
+        if not ether.haslayer(IP) or not ether.haslayer(TCP):
+            continue
+
+        tcp = ether[TCP]
+        if tcp.sport == 22 or tcp.dport == 22:
             ssh_packets.append(pkt)
     return ssh_packets
 
