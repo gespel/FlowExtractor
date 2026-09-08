@@ -28,7 +28,13 @@ class FlowTableManager:
             return
 
         if flow_hash not in self.flow_table:
-            self.flow_table[flow_hash] = Flow()
+            ip_layer = packet[IP]
+            src_ip = ip_layer.src
+            dst_ip = ip_layer.dst
+            layer_4 = packet[TCP] if packet.haslayer(TCP) else packet[UDP]
+            dst_port = layer_4.dport
+            src_port = layer_4.sport
+            self.flow_table[flow_hash] = Flow(src_ip, dst_ip, src_port, dst_port)
 
         self.flow_table[flow_hash].add_packet(packet)
 
@@ -37,10 +43,14 @@ class FlowTableManager:
 
     def print_flow_table(self):
         for flow_hash, flow in self.flow_table.items():
-            print(f"Flow Hash: {flow_hash:x}, Number of Packets: {flow.number_of_packets}")
+            print(f"Flow Hash: {flow_hash:x}\n\tNumber of Packets: {flow.number_of_packets}\n\tSource IP: {flow.src_ip}\n\tDestination IP: {flow.dst_ip}\n\tSource Port: {flow.src_port}\n\tDestination Port: {flow.dst_port}\n")
 
 class Flow:
-    def __init__(self):
+    def __init__(self, src_ip=None, dst_ip=None, src_port=None, dst_port=None):
+        self.src_ip = src_ip
+        self.dst_ip = dst_ip
+        self.src_port = src_port
+        self.dst_port = dst_port
         self.number_of_packets = 0
 
     def add_packet(self, packet):
