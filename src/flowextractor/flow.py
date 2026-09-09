@@ -43,7 +43,12 @@ class FlowTableManager:
 
     def print_flow_table(self):
         for flow_hash, flow in self.flow_table.items():
-            print(f"Flow Hash: {flow_hash:x}\n\tNumber of Packets: {flow.number_of_packets}\n\tSource IP: {flow.src_ip}\n\tDestination IP: {flow.dst_ip}\n\tSource Port: {flow.src_port}\n\tDestination Port: {flow.dst_port}\n")
+            print(f"=============\nFlow Hash: {flow_hash:x}"
+                  f"\n\tNumber of Packets: {flow.number_of_packets}"
+                  f"\n\tSource IP: {flow.src_ip}"
+                  f"\n\tDestination IP: {flow.dst_ip}"
+                  f"\n\tSource Port: {flow.src_port}"
+                  f"\n\tDestination Port: {flow.dst_port}\n")
 
 class Flow:
     def __init__(self, src_ip=None, dst_ip=None, src_port=None, dst_port=None):
