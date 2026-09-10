@@ -102,4 +102,14 @@ class Flow:
             self.last_packet_time = packet.time
 
     def build_feature_vector(self):
-        pass
+        out_vector = [
+            self.number_of_packets,
+            self.avg_packet_size,
+            self.min_packet_size,
+            self.max_packet_size,
+            self.total_bytes,
+            self.iat_min if self.iat_min != float('inf') else 0,
+            self.iat_max,
+            self.iat_mean
+        ]
+        return out_vector
