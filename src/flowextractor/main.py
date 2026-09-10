@@ -2,6 +2,7 @@ from scapy.utils import PcapReader
 from scapy.layers.inet import IP, TCP, UDP
 import argparse
 from flowextractor.flow import FlowTableManager
+from tqdm import tqdm
 
 def read_pcap(file_path):
     with PcapReader(file_path) as reader:
@@ -27,7 +28,7 @@ def main():
     packets = read_pcap(args.pcap_file)
 
     flow_manager = FlowTableManager()
-    for pkt in packets:
+    for pkt in tqdm(packets, desc="Processing packets"):
         flow_manager.add_packet(pkt)
 
     print(f"Total packets read: {len(packets)}")

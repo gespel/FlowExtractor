@@ -42,13 +42,25 @@ class FlowTableManager:
         return len(self.flow_table)
 
     def print_flow_table(self):
+        nr_single_packet_flows = 0
         for flow_hash, flow in self.flow_table.items():
-            print(f"=============\nFlow Hash: {flow_hash:x}"
-                  f"\n\tNumber of Packets: {flow.number_of_packets}"
-                  f"\n\tSource IP: {flow.src_ip}"
-                  f"\n\tDestination IP: {flow.dst_ip}"
-                  f"\n\tSource Port: {flow.src_port}"
-                  f"\n\tDestination Port: {flow.dst_port}\n")
+            if flow.number_of_packets > 1:
+                print(f"=============\nFlow Hash: {flow_hash:x}"
+                    f"\n\tNumber of Packets: {flow.number_of_packets}"
+                    f"\n\tSource IP: {flow.src_ip}"
+                    f"\n\tDestination IP: {flow.dst_ip}"
+                    f"\n\tSource Port: {flow.src_port}"
+                    f"\n\tDestination Port: {flow.dst_port}"
+                    f"\n\tAverage Packet Size: {flow.avg_packet_size:.2f} bytes"
+                    f"\n\tMinimum Packet Size: {flow.min_packet_size} bytes"
+                    f"\n\tMaximum Packet Size: {flow.max_packet_size} bytes"
+                    f"\n\tTotal Bytes: {flow.total_bytes} bytes"
+                    f"\n\tInter-Arrival Time (IAT) Min: {flow.iat_min:.6f} seconds"
+                    f"\n\tInter-Arrival Time (IAT) Max: {flow.iat_max:.6f} seconds"
+                    f"\n\tInter-Arrival Time (IAT) Mean: {flow.iat_mean:.6f} seconds")
+            else:
+                nr_single_packet_flows += 1
+        print(f"Number of single-packet flows: {nr_single_packet_flows}")
 
 class Flow:
     def __init__(self, src_ip=None, dst_ip=None, src_port=None, dst_port=None):
@@ -57,6 +69,36 @@ class Flow:
         self.src_port = src_port
         self.dst_port = dst_port
         self.number_of_packets = 0
+        self.avg_packet_size = 0
+        self.min_packet_size = float('inf')
+        self.max_packet_size = 0
+        self.total_bytes = 0
+        self.iat_min = float('inf')
+        self.iat_max = 0
+        self.iat_mean = 0
+        self.last_packet_time = None
 
     def add_packet(self, packet):
         self.number_of_packets += 1
+
+        packet_size = len(packet)
+        self.total_bytes += packet_size
+        self.avg_packet_size = self.total_bytes / self.number_of_packets
+        self.min_packet_size = min(self.min_packet_size, packet_size)
+        self.max_packet_size = max(self.max_packet_size, packet_size)
+
+        if self.last_packet_time is not None:
+            iat = packet.time - self.last_packet_time
+            self.iat_min = min(self.iat_min, iat)
+            self.iat_max = max(self.iat_max, iat)
+            if self.number_of_packets > 2:
+                self.iat_mean = ((self.iat_mean * (self.number_of_packets - 1)) + iat) / self.number_of_packets
+            else:
+                self.iat_mean = iat
+        else:
+            self.iat_min = float('inf')
+            self.iat_max = 0
+            self.iat_mean = 0
+            self.last_packet_time = packet.time
+
+    
