@@ -101,4 +101,5 @@ class Flow:
             self.iat_mean = 0
             self.last_packet_time = packet.time
 
-    
+    def build_feature_vector(self):
+        pass
