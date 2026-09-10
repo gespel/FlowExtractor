@@ -1,4 +1,5 @@
 from scapy.layers.inet import IP, TCP, UDP
+import pandas as pd
 
 def calculate_packet_hash(packet):
     if not packet.haslayer(IP) or (not packet.haslayer(TCP) and not packet.haslayer(UDP)):
@@ -62,6 +63,31 @@ class FlowTableManager:
                 nr_single_packet_flows += 1
         print(f"Number of single-packet flows: {nr_single_packet_flows}")
 
+    def write_flow_vectors_to_csv(self, file_path):
+        flow_vectors = []
+        for flow_hash, flow in self.flow_table.items():
+            if flow.number_of_packets > 1:
+                feature_vector = flow.build_feature_vector()
+                flow_vectors.append([flow_hash] + feature_vector)
+
+        df = pd.DataFrame(flow_vectors, columns=[
+            "Flow Hash",
+            "Source IP",
+            "Destination IP",
+            "Source Port",
+            "Destination Port",
+            "Number of Packets",
+            "Average Packet Size",
+            "Minimum Packet Size",
+            "Maximum Packet Size",
+            "Total Bytes",
+            "IAT Min",
+            "IAT Max",
+            "IAT Mean"
+        ])
+        df.to_csv(file_path, index=False)
+        print(f"Flow vectors written to {file_path}")
+
 class Flow:
     def __init__(self, src_ip=None, dst_ip=None, src_port=None, dst_port=None):
         self.src_ip = src_ip
@@ -103,6 +129,10 @@ class Flow:
 
     def build_feature_vector(self):
         out_vector = [
+            self.src_ip,
+            self.dst_ip,
+            self.src_port,
+            self.dst_port,
             self.number_of_packets,
             self.avg_packet_size,
             self.min_packet_size,
