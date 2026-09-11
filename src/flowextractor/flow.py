@@ -148,15 +148,15 @@ class Flow:
         out_vector = [
             self.src_ip,
             self.dst_ip,
-            self.src_port,
-            self.dst_port,
-            self.number_of_packets,
-            self.avg_packet_size,
-            self.min_packet_size,
-            self.max_packet_size,
-            self.total_bytes,
-            self.iat_min if self.iat_min != float('inf') else 0,
-            self.iat_max,
-            self.iat_mean
+            self.src_port / 65535,
+            self.dst_port / 65535,
+            self.number_of_packets / 10000,
+            self.avg_packet_size / 1500,
+            self.min_packet_size / 1500,
+            self.max_packet_size / 1500,
+            self.total_bytes / 150000000,
+            self.iat_min / 60 if self.iat_min != float('inf') else 0,
+            self.iat_max / 60,
+            self.iat_mean / 60
         ]
         return out_vector
