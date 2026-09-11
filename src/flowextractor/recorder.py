@@ -5,9 +5,11 @@ import os
 import subprocess
 import sys
 import logging
+from flowextractor.flow import FlowTableManager
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("FlowRecorder")
+
 
 class PacketRecorder:
     def __init__(self):
@@ -22,16 +24,33 @@ class PacketRecorder:
             logger.info("No packets to save.")
 
     def record(self, length: int, save_output: bool):
+        flow_table = FlowTableManager()
+        i = 0
+
         if length == None:
             logger.info("Recording packets indefinitely...")
             while True:
+                i += 1
                 self.packets = sniff(timeout=3)
+
                 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                readable_timestamp = datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y")
+
+                logger.info(f"Recorded {len(self.packets)} packets at {readable_timestamp}")
+
+                flow_table.add_packets(self.packets)
+
+                if i % 10 == 0:
+                    flow_table.print_flow_table_summary()
+                    i = 0
+
                 if save_output:
                     self.save_packets_to_file(f"recorded_packets_{timestamp}.pcap")
         else:
             self.packets = sniff(timeout=length)
+
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
             if save_output:
                 self.save_packets_to_file(f"recorded_packets_{timestamp}.pcap")
 

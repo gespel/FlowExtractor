@@ -35,9 +35,13 @@ class FlowTableManager:
             layer_4 = packet[TCP] if packet.haslayer(TCP) else packet[UDP]
             dst_port = layer_4.dport
             src_port = layer_4.sport
-            self.flow_table[flow_hash] = Flow(src_ip, dst_ip, src_port, dst_port)
+            self.flow_table[flow_hash] = Flow(flow_hash, src_ip, dst_ip, src_port, dst_port)
 
         self.flow_table[flow_hash].add_packet(packet)
+
+    def add_packets(self, packets):
+        for packet in packets:
+            self.add_packet(packet)
 
     def get_number_of_flows(self):
         return len(self.flow_table)
@@ -62,6 +66,18 @@ class FlowTableManager:
             else:
                 nr_single_packet_flows += 1
         print(f"Number of single-packet flows: {nr_single_packet_flows}")
+
+    def print_flow_table_summary(self):
+        total_flows = len(self.flow_table)
+        single_packet_flows = sum(1 for flow in self.flow_table.values() if flow.number_of_packets == 1)
+        multi_packet_flows = total_flows - single_packet_flows
+        ssh_flows = [flow for flow in self.flow_table.values() if (flow.dst_port == 22 or flow.src_port == 22)]
+        print(f"Total number of flows: {total_flows}")
+        print(f"Number of single-packet flows: {single_packet_flows}")
+        print(f"Number of multi-packet flows: {multi_packet_flows}")
+        print(f"Number of SSH flows: {len(ssh_flows)}")
+        for flow in ssh_flows:
+            print(f"\tSSH Flow Hash: {flow.flow_hash:x} - Source IP: {flow.src_ip}, Destination IP: {flow.dst_ip}, Source Port: {flow.src_port}, Destination Port: {flow.dst_port}")
 
     def write_flow_vectors_to_csv(self, file_path):
         flow_vectors = []
@@ -89,7 +105,7 @@ class FlowTableManager:
         print(f"Flow vectors written to {file_path}")
 
 class Flow:
-    def __init__(self, src_ip=None, dst_ip=None, src_port=None, dst_port=None):
+    def __init__(self, flow_hash=None, src_ip=None, dst_ip=None, src_port=None, dst_port=None):
         self.src_ip = src_ip
         self.dst_ip = dst_ip
         self.src_port = src_port
@@ -102,6 +118,7 @@ class Flow:
         self.iat_min = float('inf')
         self.iat_max = 0
         self.iat_mean = 0
+        self.flow_hash = flow_hash
         self.last_packet_time = None
 
     def add_packet(self, packet):
