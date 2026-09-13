@@ -39,6 +39,7 @@ class PacketRecorder:
                 logger.info(f"Recorded {len(self.packets)} packets at {readable_timestamp}")
 
                 flow_table.add_packets(self.packets)
+                flow_table.label_ssh_flows()
 
                 if i % 10 == 0:
                     flow_table.print_flow_table_summary()
@@ -52,6 +53,11 @@ class PacketRecorder:
             self.packets = sniff(timeout=length)
 
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+            flow_table.add_packets(self.packets)
+            flow_table.label_ssh_flows()
+            flow_table.print_flow_table_summary()
+            flow_table.write_flow_vectors_to_csv(f"flow_vectors_{timestamp}.csv")
 
             if save_output:
                 self.save_packets_to_file(f"recorded_packets_{timestamp}.pcap")

@@ -1,5 +1,6 @@
 from scapy.layers.inet import IP, TCP, UDP
 import pandas as pd
+from flowextractor import sshd_log
 
 def calculate_packet_hash(packet):
     if not packet.haslayer(IP) or (not packet.haslayer(TCP) and not packet.haslayer(UDP)):
@@ -46,6 +47,12 @@ class FlowTableManager:
     def get_number_of_flows(self):
         return len(self.flow_table)
 
+    def label_ssh_flows(self):
+        """Label every SSH flow currently in the flow table as benign
+        (valid login) or malicious (brute-force attempt), based on the
+        sshd auth log entries for the flow's peer IP and time window."""
+        sshd_log.label_ssh_flows(self.flow_table.values())
+
     def print_flow_table(self):
         nr_single_packet_flows = 0
         for flow_hash, flow in self.flow_table.items():
@@ -77,14 +84,14 @@ class FlowTableManager:
         print(f"Number of multi-packet flows: {multi_packet_flows}")
         print(f"Number of SSH flows: {len(ssh_flows)}")
         for flow in ssh_flows:
-            print(f"\tSSH Flow Hash: {flow.flow_hash:x} - Source IP: {flow.src_ip}, Destination IP: {flow.dst_ip}, Source Port: {flow.src_port}, Destination Port: {flow.dst_port}")
+            print(f"\tSSH Flow Hash: {flow.flow_hash:x} - Source IP: {flow.src_ip}, Destination IP: {flow.dst_ip}, Source Port: {flow.src_port}, Destination Port: {flow.dst_port}, Label: {flow.label}")
 
     def write_flow_vectors_to_csv(self, file_path):
         flow_vectors = []
         for flow_hash, flow in self.flow_table.items():
             if flow.number_of_packets > 1:
                 feature_vector = flow.build_feature_vector()
-                flow_vectors.append([flow_hash] + feature_vector)
+                flow_vectors.append([flow_hash] + feature_vector + [flow.label])
 
         df = pd.DataFrame(flow_vectors, columns=[
             "Flow Hash",
@@ -100,7 +107,8 @@ class FlowTableManager:
             "Total Bytes",
             "IAT Min",
             "IAT Max",
-            "IAT Mean"
+            "IAT Mean",
+            "Label"
         ])
         df.to_csv(file_path, index=False)
         print(f"Flow vectors written to {file_path}")
@@ -121,9 +129,16 @@ class Flow:
         self.iat_mean = 0
         self.flow_hash = flow_hash
         self.last_packet_time = None
+        self.first_packet_time = None
+        self.last_seen_time = None
+        self.label = sshd_log.NOT_APPLICABLE
 
     def add_packet(self, packet):
         self.number_of_packets += 1
+
+        if self.first_packet_time is None:
+            self.first_packet_time = packet.time
+        self.last_seen_time = packet.time
 
         packet_size = len(packet)
         self.total_bytes += packet_size
