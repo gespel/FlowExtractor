@@ -44,7 +44,7 @@ class PacketRecorder:
                 #if i % 10 == 0:
                 #    flow_table.print_flow_table_summary()
 
-                if i % 100 == 0:
+                if i % 10 == 0:
                     flow_table.write_flow_vectors_to_csv(f"flow_vectors.csv")
 
                 if save_output:
