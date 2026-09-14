@@ -10,6 +10,24 @@ class AttackDetectionNet(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.Linear(16, 16),
             torch.nn.ReLU(),
+            torch.nn.Linear(16, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, 64),
+            torch.nn.ReLU(),
+            torch.nn.Linear(64, 64),
+            torch.nn.ReLU(),
+            torch.nn.Linear(64, 64),
+            torch.nn.ReLU(),
+            torch.nn.Linear(64, 64),
+            torch.nn.ReLU(),
+            torch.nn.Linear(64, 64),
+            torch.nn.ReLU(),
+            torch.nn.Linear(64, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, 16),
+            torch.nn.ReLU(),
+            torch.nn.Linear(16, 16),
+            torch.nn.ReLU(),
             torch.nn.Linear(16, 8),
             torch.nn.ReLU(),
             torch.nn.Linear(8, 1)
@@ -18,7 +36,7 @@ class AttackDetectionNet(torch.nn.Module):
     def forward(self, x):
         return self.layers(x)
 
-    def train(self, training_data, epochs=100, learning_rate=0.0001):
+    def train(self, training_data, epochs=10, learning_rate=0.0001):
         optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         loss_fn = torch.nn.BCEWithLogitsLoss()
         for epoch in range(epochs):
