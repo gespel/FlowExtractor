@@ -41,8 +41,8 @@ class PacketRecorder:
                 flow_table.add_packets(self.packets)
                 flow_table.label_ssh_flows()
 
-                if i % 10 == 0:
-                    flow_table.print_flow_table_summary()
+                #if i % 10 == 0:
+                #    flow_table.print_flow_table_summary()
 
                 if i % 100 == 0:
                     flow_table.write_flow_vectors_to_csv(f"flow_vectors.csv")

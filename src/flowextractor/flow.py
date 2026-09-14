@@ -4,7 +4,7 @@ from flowextractor import sshd_log
 
 def calculate_packet_hash(packet):
     if not packet.haslayer(IP) or (not packet.haslayer(TCP) and not packet.haslayer(UDP)):
-        print("Packet does not have the required layers (IP, TCP/UDP). Skipping hash calculation.")
+        #print("Packet does not have the required layers (IP, TCP/UDP). Skipping hash calculation.")
         return None
 
     ip_layer = packet[IP]
@@ -110,7 +110,7 @@ class FlowTableManager:
             "IAT Mean",
             "Label"
         ])
-        df.to_csv(file_path, index=False, mode='a', header=not pd.io.common.file_exists(file_path))
+        df.to_csv(file_path, index=False)
         print(f"Flow vectors written to {file_path}")
 
 class Flow:
