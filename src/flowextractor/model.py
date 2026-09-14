@@ -1,29 +1,12 @@
 import torch
 import pandas
+import tqdm
 
 class AttackDetectionNet(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(10, 16),
-            torch.nn.ReLU(),
-            torch.nn.Linear(16, 16),
-            torch.nn.ReLU(),
-            torch.nn.Linear(16, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 16),
             torch.nn.ReLU(),
             torch.nn.Linear(16, 16),
             torch.nn.ReLU(),
@@ -35,12 +18,12 @@ class AttackDetectionNet(torch.nn.Module):
     def forward(self, x):
         return self.layers(x)
 
-    def train(self, training_data, epochs=500, learning_rate=0.0001):
+    def train(self, training_data, epochs=100, learning_rate=0.0001):
         optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         loss_fn = torch.nn.BCEWithLogitsLoss()
         for epoch in range(epochs):
             total_loss = 0
-            for x, y in training_data:
+            for x, y in tqdm.tqdm(training_data):
                 optimizer.zero_grad()
                 y_pred = self.forward(x)
                 loss = loss_fn(y_pred, y.unsqueeze(0))
