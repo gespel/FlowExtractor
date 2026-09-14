@@ -45,7 +45,7 @@ class PacketRecorder:
                     flow_table.print_flow_table_summary()
 
                 if i % 100 == 0:
-                    flow_table.write_flow_vectors_to_csv(f"flow_vectors_{timestamp}.csv")
+                    flow_table.write_flow_vectors_to_csv(f"flow_vectors.csv")
 
                 if save_output:
                     self.save_packets_to_file(f"recorded_packets_{timestamp}.pcap")

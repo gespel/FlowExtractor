@@ -110,7 +110,7 @@ class FlowTableManager:
             "IAT Mean",
             "Label"
         ])
-        df.to_csv(file_path, index=False)
+        df.to_csv(file_path, index=False, mode='a', header=not pd.io.common.file_exists(file_path))
         print(f"Flow vectors written to {file_path}")
 
 class Flow:
