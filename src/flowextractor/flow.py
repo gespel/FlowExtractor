@@ -1,3 +1,5 @@
+import os
+
 from scapy.layers.inet import IP, TCP, UDP
 import pandas as pd
 from flowextractor import sshd_log
@@ -110,7 +112,7 @@ class FlowTableManager:
             "IAT Mean",
             "Label"
         ])
-        df.to_csv(file_path, index=False)
+        df.to_csv(file_path, index=False, mode='a', header=not os.path.exists(file_path))
         print(f"Flow vectors written to {file_path}")
 
 class Flow:
