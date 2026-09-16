@@ -20,19 +20,19 @@ class AttackDetectionNet(torch.nn.Module):
     def forward(self, x):
         return self.layers(x)
 
-    def train(self, training_data, epochs=10, learning_rate=0.0001):
+    def train(self, training_data, epochs=20, learning_rate=0.001):
         optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         loss_fn = torch.nn.BCEWithLogitsLoss()
-        for epoch in range(epochs):
+        for epoch in tqdm.tqdm(range(epochs), desc="Training Epochs"):
             total_loss = 0
-            for x, y in tqdm.tqdm(training_data):
+            for x, y in tqdm.tqdm(training_data, desc=f"Training Batches Epoch {epoch+1}"):
                 optimizer.zero_grad()
                 y_pred = self.forward(x)
                 loss = loss_fn(y_pred, y.unsqueeze(0))
                 loss.backward()
                 optimizer.step()
                 total_loss += loss.item()
-            print(f"Epoch {epoch+1}/{epochs} completed. average loss: {total_loss/len(training_data)}")
+            tqdm.tqdm.write(f"Epoch {epoch+1}/{epochs} completed. average loss: {total_loss/len(training_data)}")
         print("Training finished.")
 
 
@@ -62,10 +62,11 @@ for x, y, y_pred in results:
 
 CUTOFF_VALUE = 0.5
 
+overall = len(results)
 TP = [1 if y == 1 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
 FP = [1 if y == 0 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
 TN = [1 if y == 0 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
 FN = [1 if y == 1 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
 
-print(f"TP: {sum(TP)}, FP: {sum(FP)}, TN: {sum(TN)}, FN: {sum(FN)}")
+print(f"TP: {sum(TP)} ({sum(TP)/overall * 100:.2f} %), FP: {sum(FP)} ({sum(FP)/overall * 100:.2f} %), TN: {sum(TN)} ({sum(TN)/overall * 100:.2f} %), FN: {sum(FN)} ({sum(FN)/overall * 100:.2f} %)")
 
