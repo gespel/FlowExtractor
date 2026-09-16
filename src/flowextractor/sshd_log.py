@@ -43,9 +43,9 @@ def label_ssh_flows(flows, padding_seconds=5):
     for flow in ssh_flows:
         peer_ip = flow.src_ip if flow.dst_port == 22 else flow.dst_ip
         failed, accepted = stats.get(peer_ip, (0, False))
-        if accepted and failed < FAIL_THRESHOLD:
+        if accepted and failed < FAIL_THRESHOLD and flow.label != MALICIOUS:
             flow.label = BENIGN
         elif failed >= FAIL_THRESHOLD or (failed and not accepted):
             flow.label = MALICIOUS
-        else:
+        elif flow.label != MALICIOUS:
             flow.label = UNKNOWN

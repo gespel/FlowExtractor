@@ -10,22 +10,6 @@ class AttackDetectionNet(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.Linear(16, 16),
             torch.nn.ReLU(),
-            torch.nn.Linear(16, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 64),
-            torch.nn.ReLU(),
-            torch.nn.Linear(64, 64),
-            torch.nn.ReLU(),
-            torch.nn.Linear(64, 64),
-            torch.nn.ReLU(),
-            torch.nn.Linear(64, 64),
-            torch.nn.ReLU(),
-            torch.nn.Linear(64, 64),
-            torch.nn.ReLU(),
-            torch.nn.Linear(64, 32),
-            torch.nn.ReLU(),
-            torch.nn.Linear(32, 16),
-            torch.nn.ReLU(),
             torch.nn.Linear(16, 16),
             torch.nn.ReLU(),
             torch.nn.Linear(16, 8),
@@ -51,28 +35,15 @@ class AttackDetectionNet(torch.nn.Module):
             print(f"Epoch {epoch+1}/{epochs} completed. average loss: {total_loss/len(training_data)}")
         print("Training finished.")
 
-training_data = pandas.read_csv("flow_vectors.csv")
+
+training_data = pandas.read_csv("big_data_set.csv")
 print(training_data.info())
 
 x_df = training_data[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]]
 y_df = training_data["Label"]
 
-x = []
-y = []
-for i in range(len(y_df)):
-    if y_df[i] != "benign" and y_df[i] != "malicious":
-        y_df[i] = "benign"
-    if y_df[i] == "benign":
-        y_df[i] = "benign"
-    if y_df[i] == "malicious":
-        y_df[i] = "malicious"
-    if y_df[i] == "benign":
-        y.append(0)
-    if y_df[i] == "malicious":
-        y.append(1)
-
-for i in range(len(x_df)):
-    x.append(x_df.iloc[i].tolist())
+x = [xi.tolist() for xi in x_df.to_numpy()]
+y = [1 if i == "malicious" else 0 for i in y_df]
 
 print(f"{x_df.info()}\n")
 print(y_df.head())
@@ -88,10 +59,13 @@ print(f"Validation data prepared with {len(validation_data)} samples.")
 results = [(x, y, m.forward(x)) for x, y in validation_data]
 for x, y, y_pred in results:
     print(f"True Label: {y} Predicted: {torch.sigmoid(y_pred)}")
-TP = [1 if y == 1 and torch.sigmoid(y_pred) >= 0.7 else 0 for x, y, y_pred in results]
-FP = [1 if y == 0 and torch.sigmoid(y_pred) >= 0.7 else 0 for x, y, y_pred in results]
-TN = [1 if y == 0 and torch.sigmoid(y_pred) < 0.7 else 0 for x, y, y_pred in results]
-FN = [1 if y == 1 and torch.sigmoid(y_pred) < 0.7 else 0 for x, y, y_pred in results]
+
+CUTOFF_VALUE = 0.5
+
+TP = [1 if y == 1 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
+FP = [1 if y == 0 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
+TN = [1 if y == 0 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
+FN = [1 if y == 1 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
 
 print(f"TP: {sum(TP)}, FP: {sum(FP)}, TN: {sum(TN)}, FN: {sum(FN)}")
 
