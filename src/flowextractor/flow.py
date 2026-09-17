@@ -1,5 +1,5 @@
 import os
-
+import colored
 from scapy.layers.inet import IP, TCP, UDP
 import pandas as pd
 from flowextractor import sshd_log
@@ -113,7 +113,7 @@ class FlowTableManager:
             "Label"
         ])
         df.to_csv(file_path, index=False, mode='a', header=not os.path.exists(file_path))
-        print(f"Flow vectors written to {file_path}")
+        print(colored.fg("red") + f"Flow vectors written to {file_path}" + colored.attr("reset"))
 
 class Flow:
     def __init__(self, flow_hash=None, src_ip=None, dst_ip=None, src_port=None, dst_port=None):

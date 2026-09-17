@@ -2,6 +2,7 @@ from scapy.all import *
 import datetime
 import argparse
 import os
+import colored
 import subprocess
 import sys
 import logging
@@ -18,7 +19,7 @@ class PacketRecorder:
     def save_packets_to_file(self, file_path: str):
         if self.packets:
             wrpcap(file_path, self.packets, append=True)
-            logger.info(f"Saved {len(self.packets)} packets to {file_path}")
+            logger.info(colored.fg("green") + f"Saved {len(self.packets)} packets to {file_path}" + colored.attr("reset"))
             subprocess.run(["chmod", "777", file_path])
         else:
             logger.info("No packets to save.")
@@ -28,7 +29,7 @@ class PacketRecorder:
         i = 0
 
         if length == None:
-            logger.info("Recording packets indefinitely...")
+            logger.info(colored.fg("green") + "Recording packets indefinitely..." + colored.attr("reset"))
             while True:
                 i += 1
                 self.packets = sniff(timeout=3)
@@ -36,7 +37,7 @@ class PacketRecorder:
                 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 readable_timestamp = datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y")
 
-                logger.info(f"Recorded {len(self.packets)} packets at {readable_timestamp}")
+                logger.info(f"Recorded {colored.fg('green')}{len(self.packets)}{colored.attr('reset')} packets at {colored.fg('magenta')}{readable_timestamp}{colored.attr('reset')}")
 
                 flow_table.add_packets(self.packets)
                 flow_table.label_ssh_flows()
