@@ -36,37 +36,43 @@ class AttackDetectionNet(torch.nn.Module):
         print("Training finished.")
 
 
-training_data = pandas.read_csv("big_data_set.csv")
-print(training_data.info())
 
-x_df = training_data[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]]
-y_df = training_data["Label"]
+def main():
+    training_data = pandas.read_csv("flow_vectors.csv")
+    print(training_data.info())
 
-x = [xi.tolist() for xi in x_df.to_numpy()]
-y = [1 if i == "malicious" else 0 for i in y_df]
+    x_df = training_data[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]]
+    y_df = training_data["Label"]
 
-print(f"{x_df.info()}\n")
-print(y_df.head())
+    x = [xi.tolist() for xi in x_df.to_numpy()]
+    y = [1 if i == "malicious" else 0 for i in y_df]
 
-X_train, X_test = x[:int(len(x)*0.8)], x[int(len(x)*0.8):]
-y_train, y_test = y[:int(len(y)*0.8)], y[int(len(y)*0.8):]
+    print(f"{x_df.info()}\n")
+    print(y_df.head())
 
-m = AttackDetectionNet()
-print(m)
-m.train(list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_train], [torch.tensor(yi, dtype=torch.float32) for yi in y_train])))
-validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test], [torch.tensor(yi, dtype=torch.float32) for yi in y_test]))
-print(f"Validation data prepared with {len(validation_data)} samples.")
-results = [(x, y, m.forward(x)) for x, y in validation_data]
-for x, y, y_pred in results:
-    print(f"True Label: {y} Predicted: {torch.sigmoid(y_pred)}")
+    X_train, X_test = x[:int(len(x)*0.8)], x[int(len(x)*0.8):]
+    y_train, y_test = y[:int(len(y)*0.8)], y[int(len(y)*0.8):]
 
-CUTOFF_VALUE = 0.5
+    m = AttackDetectionNet()
+    print(m)
+    m.train(list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_train], [torch.tensor(yi, dtype=torch.float32) for yi in y_train])))
+    validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test], [torch.tensor(yi, dtype=torch.float32) for yi in y_test]))
+    print(f"Validation data prepared with {len(validation_data)} samples.")
+    results = [(x, y, m.forward(x)) for x, y in validation_data]
+    for x, y, y_pred in results:
+        print(f"True Label: {y} Predicted: {torch.sigmoid(y_pred)}")
 
-overall = len(results)
-TP = [1 if y == 1 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
-FP = [1 if y == 0 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
-TN = [1 if y == 0 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
-FN = [1 if y == 1 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
+    CUTOFF_VALUE = 0.5
 
-print(f"TP: {sum(TP)} ({sum(TP)/overall * 100:.2f} %), FP: {sum(FP)} ({sum(FP)/overall * 100:.2f} %), TN: {sum(TN)} ({sum(TN)/overall * 100:.2f} %), FN: {sum(FN)} ({sum(FN)/overall * 100:.2f} %)")
+    overall = len(results)
+    TP = [1 if y == 1 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
+    FP = [1 if y == 0 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
+    TN = [1 if y == 0 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
+    FN = [1 if y == 1 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
+
+    print(f"TP: {sum(TP)} ({sum(TP)/overall * 100:.2f} %), FP: {sum(FP)} ({sum(FP)/overall * 100:.2f} %), TN: {sum(TN)} ({sum(TN)/overall * 100:.2f} %), FN: {sum(FN)} ({sum(FN)/overall * 100:.2f} %)")
+
+
+if __name__ == "__main__":
+    main()
 
