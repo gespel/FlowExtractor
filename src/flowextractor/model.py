@@ -1,8 +1,9 @@
 import torch
 import pandas
 import tqdm
+import argparse
 
-class AttackDetectionNet(torch.nn.Module):
+class SSHAttackDetectionNet(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = torch.nn.Sequential(
@@ -38,7 +39,11 @@ class AttackDetectionNet(torch.nn.Module):
 
 
 def main():
-    training_data = pandas.read_csv("flow_vectors.csv")
+    argparser = argparse.ArgumentParser(description="Train a neural network for attack detection.")
+    argparser.add_argument("--feature_csv", type=str, default="flow_vectors.csv", help="Path to the CSV file containing flow features.")
+    args = argparser.parse_args()
+
+    training_data = pandas.read_csv(args.feature_csv)
     print(training_data.info())
 
     x_df = training_data[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]]
@@ -53,7 +58,7 @@ def main():
     X_train, X_test = x[:int(len(x)*0.8)], x[int(len(x)*0.8):]
     y_train, y_test = y[:int(len(y)*0.8)], y[int(len(y)*0.8):]
 
-    m = AttackDetectionNet()
+    m = SSHAttackDetectionNet()
     print(m)
     m.train(list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_train], [torch.tensor(yi, dtype=torch.float32) for yi in y_train])))
     validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test], [torch.tensor(yi, dtype=torch.float32) for yi in y_test]))
