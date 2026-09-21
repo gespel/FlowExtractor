@@ -91,10 +91,17 @@ class FlowTableManager:
 
     def write_flow_vectors_to_csv(self, file_path):
         flow_vectors = []
+        delete = []
         for flow_hash, flow in self.flow_table.items():
             if flow.number_of_packets > 1 and time.time() - flow.last_seen_time > 60:
                 feature_vector = flow.build_feature_vector()
                 flow_vectors.append([flow_hash] + feature_vector + [flow.label, flow.attack_type])
+                delete.append(flow_hash)
+
+        number_of_flows_written = len(flow_vectors)
+
+        for flow_hash in delete:
+            del self.flow_table[flow_hash]
 
         df = pd.DataFrame(flow_vectors, columns=[
             "Flow Hash",
@@ -115,7 +122,8 @@ class FlowTableManager:
             "Attack Type"
         ])
         df.to_csv(file_path, index=False, mode='a', header=not os.path.exists(file_path))
-        print(colored.fg("red") + f"Flow vectors written to {file_path}" + colored.attr("reset"))
+        if number_of_flows_written > 0:
+            print(colored.fg("green") + f"{number_of_flows_written} flow vectors written to {file_path}" + colored.attr("reset"))
 
 class Flow:
     def __init__(self, flow_hash=None, src_ip=None, dst_ip=None, src_port=None, dst_port=None):
@@ -135,8 +143,8 @@ class Flow:
         self.flow_hash = flow_hash
         self.last_packet_time = None
         self.first_packet_time = None
-        self.label = sshd_log.NOT_APPLICABLE
-        self.attack_type = None
+        self.label = "benign"
+        self.attack_type = "n/a"
 
     def add_packet(self, packet):
         self.number_of_packets += 1
