@@ -134,6 +134,7 @@ class Flow:
         self.first_packet_time = None
         self.last_seen_time = None
         self.label = sshd_log.NOT_APPLICABLE
+        self.attack_type = None
 
     def add_packet(self, packet):
         self.number_of_packets += 1

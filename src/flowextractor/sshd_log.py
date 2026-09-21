@@ -47,5 +47,6 @@ def label_ssh_flows(flows, padding_seconds=5):
             flow.label = BENIGN
         elif failed >= FAIL_THRESHOLD or (failed and not accepted):
             flow.label = MALICIOUS
+            flow.attack_type = "ssh_brute_force"
         elif flow.label != MALICIOUS:
             flow.label = UNKNOWN
