@@ -93,7 +93,7 @@ class FlowTableManager:
         for flow_hash, flow in self.flow_table.items():
             if flow.number_of_packets > 1:
                 feature_vector = flow.build_feature_vector()
-                flow_vectors.append([flow_hash] + feature_vector + [flow.label])
+                flow_vectors.append([flow_hash] + feature_vector + [flow.label, flow.attack_type])
 
         df = pd.DataFrame(flow_vectors, columns=[
             "Flow Hash",
@@ -110,7 +110,8 @@ class FlowTableManager:
             "IAT Min",
             "IAT Max",
             "IAT Mean",
-            "Label"
+            "Label",
+            "Attack Type"
         ])
         df.to_csv(file_path, index=False, mode='a', header=not os.path.exists(file_path))
         print(colored.fg("red") + f"Flow vectors written to {file_path}" + colored.attr("reset"))
