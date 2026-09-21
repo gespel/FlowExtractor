@@ -28,6 +28,8 @@ class PacketRecorder:
         flow_table = FlowTableManager()
         i = 0
 
+        attacker_ip = input("Enter the attacker IP for Slowloris detection: ")
+
         if length == None:
             logger.info(colored.fg("green") + "Recording packets indefinitely..." + colored.attr("reset"))
             while True:
@@ -41,6 +43,7 @@ class PacketRecorder:
 
                 flow_table.add_packets(self.packets)
                 flow_table.label_ssh_flows()
+                flow_table.label_slowloris_flows(attacker_ip)
 
                 #if i % 10 == 0:
                 #    flow_table.print_flow_table_summary()

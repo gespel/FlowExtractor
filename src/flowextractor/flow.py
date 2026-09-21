@@ -2,7 +2,8 @@ import os
 import colored
 from scapy.layers.inet import IP, TCP, UDP
 import pandas as pd
-from flowextractor import sshd_log
+from flowextractor import sshd_log, slowloris
+import time
 
 def calculate_packet_hash(packet):
     if not packet.haslayer(IP) or (not packet.haslayer(TCP) and not packet.haslayer(UDP)):
@@ -50,10 +51,10 @@ class FlowTableManager:
         return len(self.flow_table)
 
     def label_ssh_flows(self):
-        """Label every SSH flow currently in the flow table as benign
-        (valid login) or malicious (brute-force attempt), based on the
-        sshd auth log entries for the flow's peer IP and time window."""
         sshd_log.label_ssh_flows(self.flow_table.values())
+
+    def label_slowloris_flows(self, attacker_ip):
+        slowloris.label_slowloris_flows(self.flow_table.values(), attacker_ip)
 
     def print_flow_table(self):
         nr_single_packet_flows = 0
@@ -91,7 +92,7 @@ class FlowTableManager:
     def write_flow_vectors_to_csv(self, file_path):
         flow_vectors = []
         for flow_hash, flow in self.flow_table.items():
-            if flow.number_of_packets > 1:
+            if flow.number_of_packets > 1 and time.time() - flow.last_seen_time > 60:
                 feature_vector = flow.build_feature_vector()
                 flow_vectors.append([flow_hash] + feature_vector + [flow.label, flow.attack_type])
 
@@ -127,13 +128,13 @@ class Flow:
         self.min_packet_size = float('inf')
         self.max_packet_size = 0
         self.total_bytes = 0
+        self.last_seen_time = time.time()
         self.iat_min = float('inf')
         self.iat_max = 0
         self.iat_mean = 0
         self.flow_hash = flow_hash
         self.last_packet_time = None
         self.first_packet_time = None
-        self.last_seen_time = None
         self.label = sshd_log.NOT_APPLICABLE
         self.attack_type = None
 
