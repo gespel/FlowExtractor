@@ -43,7 +43,7 @@ class PacketRecorder:
 
                 flow_table.add_packets(self.packets)
                 flow_table.label_ssh_flows()
-                flow_table.label_slowloris_flows(attacker_ip)
+                #flow_table.label_slowloris_flows(attacker_ip)
 
                 #if i % 10 == 0:
                 #    flow_table.print_flow_table_summary()

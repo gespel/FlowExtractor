@@ -76,6 +76,10 @@ def main():
     FN = [1 if y == 1 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
 
     print(f"TP: {sum(TP)} ({sum(TP)/overall * 100:.2f} %), FP: {sum(FP)} ({sum(FP)/overall * 100:.2f} %), TN: {sum(TN)} ({sum(TN)/overall * 100:.2f} %), FN: {sum(FN)} ({sum(FN)/overall * 100:.2f} %)")
+    print(f"Precision: {sum(TP)/(sum(TP)+sum(FP)) * 100:.2f} %")
+    print(f"Recall: {sum(TP)/(sum(TP)+sum(FN)) * 100:.2f} %")
+    print(f"F1 Score: {2 * (sum(TP)/(sum(TP)+sum(FP))) * (sum(TP)/(sum(TP)+sum(FN))) / ((sum(TP)/(sum(TP)+sum(FP))) + (sum(TP)/(sum(TP)+sum(FN)))) * 100:.2f} %")
+    print(f"False Negatives: {sum(FN)/(sum(FN)+sum(TP)+sum(FP)+sum(TN)) * 100:.2f} %")
 
 
 if __name__ == "__main__":
