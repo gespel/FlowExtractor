@@ -93,7 +93,7 @@ class FlowTableManager:
         flow_vectors = []
         delete = []
         for flow_hash, flow in self.flow_table.items():
-            if flow.number_of_packets > 1 and time.time() - flow.last_seen_time > 60:
+            if time.time() - flow.last_seen_time > 60:
                 feature_vector = flow.build_feature_vector()
                 flow_vectors.append([flow_hash] + feature_vector + [flow.label, flow.attack_type])
                 delete.append(flow_hash)

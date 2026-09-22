@@ -39,6 +39,7 @@ class SSHAttackDetectionNet(torch.nn.Module):
 def normalize_training_data(df):
     feature_columns = ["Number of Packets", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean", "Label", "Attack Type"]
     ndf = df[feature_columns]
+    #ndf = ndf.drop(ndf[ndf["Number of Packets"] == 1].index)
     ndf["Number of Packets (Scaled to 1000000)"] = ndf["Number of Packets"] / 1000000
     ndf["Source Port"] = ndf["Source Port"] / 65535
     ndf["Destination Port"] = ndf["Destination Port"] / 65535

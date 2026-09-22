@@ -50,6 +50,7 @@ class PacketRecorder:
 
                 if i % 10 == 0:
                     flow_table.write_flow_vectors_to_csv(f"flow_vectors.csv")
+                    i = 0
 
                 if save_output:
                     self.save_packets_to_file(f"recorded_packets_{timestamp}.pcap")
