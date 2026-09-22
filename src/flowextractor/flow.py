@@ -108,7 +108,6 @@ class FlowTableManager:
             "Source IP",
             "Destination IP",
             "Number of Packets",
-            "Number of Packets (Scaled to 1000000)",
             "Source Port",
             "Destination Port",
             "Average Packet Size",
@@ -178,15 +177,14 @@ class Flow:
             self.src_ip,
             self.dst_ip,
             self.number_of_packets,
-            self.number_of_packets / 1000000,
-            self.src_port / 65535,
-            self.dst_port / 65535,
-            self.avg_packet_size / 1500,
-            self.min_packet_size / 1500,
-            self.max_packet_size / 1500,
-            self.total_bytes / 150000000,
-            self.iat_min / 60 if self.iat_min != float('inf') else 0,
-            self.iat_max / 60,
-            self.iat_mean / 60
+            self.src_port,
+            self.dst_port,
+            self.avg_packet_size,
+            self.min_packet_size,
+            self.max_packet_size,
+            self.total_bytes,
+            self.iat_min,
+            self.iat_max,
+            self.iat_mean
         ]
         return out_vector
