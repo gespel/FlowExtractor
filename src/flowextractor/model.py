@@ -26,7 +26,7 @@ class SSHAttackDetectionNet(torch.nn.Module):
         loss_fn = torch.nn.BCEWithLogitsLoss()
         for epoch in tqdm.tqdm(range(epochs), desc="Training Epochs"):
             total_loss = 0
-            for x, y in training_data:
+            for x, y in tqdm.tqdm(training_data, leave=False):
                 optimizer.zero_grad()
                 y_pred = self.forward(x)
                 loss = loss_fn(y_pred, y.unsqueeze(0))
