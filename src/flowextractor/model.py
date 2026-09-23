@@ -2,8 +2,9 @@ import torch
 import pandas
 import tqdm
 import argparse
+from torch.utils.data import DataLoader
 
-class SSHAttackDetectionNet(torch.nn.Module):
+class AttackDetectionNet(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = torch.nn.Sequential(
@@ -21,19 +22,20 @@ class SSHAttackDetectionNet(torch.nn.Module):
     def forward(self, x):
         return self.layers(x)
 
-    def train(self, training_data, epochs=20, learning_rate=0.001):
+    def train(self, training_data, epochs=20, learning_rate=0.001, batch_size=32):
         optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         loss_fn = torch.nn.BCEWithLogitsLoss()
+        dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
         for epoch in tqdm.tqdm(range(epochs), desc="Training Epochs"):
             total_loss = 0
-            for x, y in tqdm.tqdm(training_data, leave=False):
+            for x, y in tqdm.tqdm(dataloader, leave=False):
                 optimizer.zero_grad()
                 y_pred = self.forward(x)
-                loss = loss_fn(y_pred, y.unsqueeze(0))
+                loss = loss_fn(y_pred, y.unsqueeze(1))
                 loss.backward()
                 optimizer.step()
                 total_loss += loss.item()
-            tqdm.tqdm.write(f"Epoch {epoch+1}/{epochs} completed. average loss: {total_loss/len(training_data)}")
+            tqdm.tqdm.write(f"Epoch {epoch+1}/{epochs} completed. average loss: {total_loss/len(dataloader)}")
         print("Training finished.")
 
 def normalize_training_data(df):
@@ -55,6 +57,7 @@ def normalize_training_data(df):
 def main():
     argparser = argparse.ArgumentParser(description="Train a neural network for attack detection.")
     argparser.add_argument("--feature_csv", type=str, default="flow_vectors.csv", help="Path to the CSV file containing flow features.")
+    argparser.add_argument("--batch_size", type=int, default=32, help="Batch size used during training.")
     args = argparser.parse_args()
 
     training_data = normalize_training_data(pandas.read_csv(args.feature_csv))
@@ -72,9 +75,9 @@ def main():
     X_train, X_test = x[:int(len(x)*0.8)], x[int(len(x)*0.8):]
     y_train, y_test = y[:int(len(y)*0.8)], y[int(len(y)*0.8):]
 
-    m = SSHAttackDetectionNet()
+    m = AttackDetectionNet()
     print(m)
-    m.train(list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_train], [torch.tensor(yi, dtype=torch.float32) for yi in y_train])))
+    m.train(list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_train], [torch.tensor(yi, dtype=torch.float32) for yi in y_train])), batch_size=args.batch_size)
     validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test], [torch.tensor(yi, dtype=torch.float32) for yi in y_test]))
     print(f"Validation data prepared with {len(validation_data)} samples.")
     results = [(x, y, m.forward(x)) for x, y in validation_data]
