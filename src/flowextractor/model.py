@@ -10,6 +10,8 @@ class AttackDetectionNet(torch.nn.Module):
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(10, 16),
             torch.nn.ReLU(),
+            torch.nn.Linear(16, 16),
+            torch.nn.ReLU(),
             torch.nn.Linear(16, 8),
             torch.nn.ReLU(),
             torch.nn.Linear(8, 1)
@@ -62,6 +64,7 @@ def main():
 
     x_df = training_data[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]]
     y_df = training_data["Label"]
+
     x = [xi.tolist() for xi in x_df.to_numpy()]
     y = [1 if i == "malicious" else 0 for i in y_df]
 
