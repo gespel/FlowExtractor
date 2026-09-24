@@ -80,7 +80,8 @@ def main():
     m.train(list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_train], [torch.tensor(yi, dtype=torch.float32) for yi in y_train])), batch_size=args.batch_size, epochs=args.epochs)
     validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test], [torch.tensor(yi, dtype=torch.float32) for yi in y_test]))
     print(f"Validation data prepared with {len(validation_data)} samples.")
-    m.save(f"{time.time()}.pt")
+
+    torch.save(m, f"{time.time()}.pt")
 
     dl = DataLoader(validation_data, batch_size=args.batch_size, num_workers=4)
     results = []
