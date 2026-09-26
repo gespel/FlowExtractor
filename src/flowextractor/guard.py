@@ -3,6 +3,7 @@ import argparse
 import pandas
 import torch
 import tqdm
+import random
 
 class FlowGuard:
     def __init__(self, model_path):
@@ -22,13 +23,17 @@ class FlowGuard:
 def main():
     argparser = argparse.ArgumentParser(description="FlowGuard: A tool for detecting attacks in network flows using a trained neural network model.")
     argparser.add_argument("--model_path", type=str, required=True, help="Path to the trained model file.")
+    argparser.add_argument("--sample_number", type=int, default=1000, help="Number of samples to perform inference on.")
     args = argparser.parse_args()
 
     flow_guard = FlowGuard(args.model_path)
     print("FlowGuard initialized with model:", args.model_path)
 
-    test_data = pandas.read_csv("flow_vectors.csv")[:100]
-    test_data_normalized = normalize_training_data(test_data)
+    test_data = pandas.read_csv("flow_vectors.csv")
+
+    random_start_index = random.randint(0, len(test_data)-args.sample_number)
+
+    test_data_normalized = normalize_training_data(test_data)[random_start_index:random_start_index+args.sample_number]
     x_test = test_data_normalized[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]].to_numpy()
     
     num_malicious = 0
