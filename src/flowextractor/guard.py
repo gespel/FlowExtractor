@@ -31,6 +31,9 @@ def main():
 
     test_data = pandas.read_csv("flow_vectors.csv")
 
+    if args.sample_number > len(test_data):
+        print(f"Error: Not enough samples to probe {args.sample_number} from it")
+        return
     random_start_index = random.randint(0, len(test_data)-args.sample_number)
 
     test_data_normalized = normalize_training_data(test_data)[random_start_index:random_start_index+args.sample_number]
