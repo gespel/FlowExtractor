@@ -16,6 +16,7 @@ dependencies = [
 flowextractor = "flowextractor.main:main"
 flowrecorder = "flowextractor.recorder:main"
 flowmodel = "flowextractor.model:main"
+flowguard = "flowextractor.guard:main"
 
 [build-system]
 requires = ["hatchling"]
