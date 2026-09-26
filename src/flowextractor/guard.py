@@ -1,11 +1,12 @@
-from flowextractor.model import AttackDetectionNet, normalize_training_data
+from flowextractor.model import *
 import argparse
+import pandas
+import torch
+import tqdm
 
 class FlowGuard:
     def __init__(self, model_path):
-        self.model = AttackDetectionNet()
-        self.model.load_state_dict(torch.load(model_path))
-        self.model.eval()
+        self.model = torch.load(model_path, weights_only=False)
 
     def get_model(self):
         return self.model
@@ -26,11 +27,23 @@ def main():
     flow_guard = FlowGuard(args.model_path)
     print("FlowGuard initialized with model:", args.model_path)
 
-    test_data = pandas.read_csv("flow_vectors.csv")
+    test_data = pandas.read_csv("flow_vectors.csv")[:100]
     test_data_normalized = normalize_training_data(test_data)
     x_test = test_data_normalized[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]].to_numpy()
-    predictions = [flow_guard.predict(x) for x in x_test]
-    print("Predictions:", predictions)
+    
+    num_malicious = 0
+    num_benign = 0
+    
+    for x in tqdm.tqdm(x_test):
+        prediction = flow_guard.predict(x)
+        #print(f"Flow Features: {x}, Prediction: {prediction:.4f}")
+        if prediction >= 0.5:
+            num_malicious += 1
+        else:
+            num_benign += 1
+
+    print(f"Number of Malicious Flows: {num_malicious}")
+    print(f"Number of Benign Flows: {num_benign}")
 
 if __name__ == "__main__":
     main()
