@@ -24,12 +24,16 @@ def main():
     argparser = argparse.ArgumentParser(description="FlowGuard: A tool for detecting attacks in network flows using a trained neural network model.")
     argparser.add_argument("--model_path", type=str, required=True, help="Path to the trained model file.")
     argparser.add_argument("--sample_number", type=int, default=1000, help="Number of samples to perform inference on.")
+    argparser.add_argument("--live", type=bool, default=False, help="Activates the live guarding for ingress traffic")
     args = argparser.parse_args()
 
     flow_guard = FlowGuard(args.model_path)
     print("FlowGuard initialized with model:", args.model_path)
 
-    test_data = pandas.read_csv("flow_vectors.csv")
+    if args.live:
+        pass
+    else:
+        test_data = pandas.read_csv("flow_vectors.csv")
 
     if args.sample_number > len(test_data):
         print(f"Error: Not enough samples to probe {args.sample_number} from it")
