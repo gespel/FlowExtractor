@@ -1,9 +1,13 @@
 import torch
+import numpy
 import pandas
 import tqdm
 import argparse
 import time
 from torch.utils.data import DataLoader
+
+FEATURE_COLUMNS = ["Number of Packets", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]
+LOG_SCALED_COLUMNS = ["Number of Packets", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]
 
 class AttackDetectionNet(torch.nn.Module):
     def __init__(self):
@@ -38,19 +42,14 @@ class AttackDetectionNet(torch.nn.Module):
         print("Training finished.")
 
 def normalize_training_data(df):
-    feature_columns = ["Number of Packets", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean", "Label", "Attack Type"]
-    ndf = df[feature_columns]
-    #ndf = ndf.drop(ndf[ndf["Number of Packets"] == 1].index)
-    ndf["Number of Packets (Scaled to 1000000)"] = ndf["Number of Packets"] / 1000000
+    ndf = df[FEATURE_COLUMNS + ["Label", "Attack Type"]].copy()
+    ndf = ndf.replace(float("inf"), 0)
+    for column in ["IAT Min", "IAT Max", "IAT Mean"]:
+        ndf[column] = ndf[column] * 1000000
+    for column in LOG_SCALED_COLUMNS:
+        ndf[column] = numpy.log2(1 + ndf[column]) / 32
     ndf["Source Port"] = ndf["Source Port"] / 65535
     ndf["Destination Port"] = ndf["Destination Port"] / 65535
-    ndf["Average Packet Size"] = ndf["Average Packet Size"] / 1500
-    ndf["Minimum Packet Size"] = ndf["Minimum Packet Size"] / 1500
-    ndf["Maximum Packet Size"] = ndf["Maximum Packet Size"] / 1500
-    ndf["Total Bytes"] = ndf["Total Bytes"] / 150000000
-    ndf["IAT Min"] = ndf["IAT Min"] / 60 if ndf["IAT Min"].max() != float('inf') else 0
-    ndf["IAT Max"] = ndf["IAT Max"] / 60
-    ndf["IAT Mean"] = ndf["IAT Mean"] / 60
     return ndf
 
 def main():
@@ -63,7 +62,7 @@ def main():
     training_data = normalize_training_data(pandas.read_csv(args.feature_csv))
     print(training_data.info())
 
-    x_df = training_data[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]]
+    x_df = training_data[FEATURE_COLUMNS]
     y_df = training_data["Label"]
 
     x = [xi.tolist() for xi in x_df.to_numpy()]
