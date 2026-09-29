@@ -15,8 +15,6 @@ class AttackDetectionNet(torch.nn.Module):
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(10, 16),
             torch.nn.ReLU(),
-            torch.nn.Linear(16, 16),
-            torch.nn.ReLU(),
             torch.nn.Linear(16, 8),
             torch.nn.ReLU(),
             torch.nn.Linear(8, 1)
