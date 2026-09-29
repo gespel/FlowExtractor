@@ -11,6 +11,7 @@ dependencies = [
     "scapy>=2.7.0",
     "torch>=2.14.0",
     "tqdm>=4.70.0",
+    "triton-rocm>=3.8.0 ; sys_platform == 'linux'",
 ]
 
 [project.scripts]
@@ -26,3 +27,12 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/flowextractor"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-rocm", marker = "sys_platform == 'linux'" }
+triton-rocm = { index = "pytorch-rocm", marker = "sys_platform == 'linux'" }
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm7.2"
+explicit = true

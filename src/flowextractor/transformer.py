@@ -7,8 +7,17 @@ import torch
 import matplotlib.pyplot as plt
 from flowextractor.model import *
 
-QMAX = {torch.int8: 127, torch.int16: 32767, torch.int32: 2**27 - 1}
-COLORS = {"float32": "#2a78d6", "int32": "#eb6834", "int16": "#1baf7a", "int8": "#eda100"}
+QMAX = {
+    torch.int8: 127, 
+    torch.int16: 32767, 
+    torch.int32: 2**27 - 1
+}
+COLORS = {
+    "float32": "#0004ff", 
+    "int32": "#ff0000", 
+    "int16": "#00ff00", 
+    "int8": "#00eeff"
+}
 
 class IntegerLinear(torch.nn.Module):
     def __init__(self, linear, dtype, input_scale, output_max):

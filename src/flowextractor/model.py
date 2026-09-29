@@ -24,12 +24,16 @@ class AttackDetectionNet(torch.nn.Module):
         return self.layers(x)
 
     def train(self, training_data, epochs=200, learning_rate=0.001, batch_size=32):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"Training on {device}.")
+        self.to(device)
         optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         loss_fn = torch.nn.BCEWithLogitsLoss()
         dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
         for epoch in tqdm.tqdm(range(epochs), desc="Training Epochs"):
             total_loss = 0
             for x, y in tqdm.tqdm(dataloader, leave=False):
+                x, y = x.to(device), y.to(device)
                 optimizer.zero_grad()
                 y_pred = self.forward(x)
                 loss = loss_fn(y_pred, y.unsqueeze(1))
@@ -37,6 +41,7 @@ class AttackDetectionNet(torch.nn.Module):
                 optimizer.step()
                 total_loss += loss.item()
             tqdm.tqdm.write(f"Epoch {epoch+1}/{epochs} completed. average loss: {total_loss/len(dataloader)}")
+        self.to("cpu")
         print("Training finished.")
 
 def normalize_training_data(df):
