@@ -1,4 +1,6 @@
 from flowextractor.model import *
+from flowextractor.flow import *
+from flowextractor.transformer import quantize_input
 import argparse
 import pandas
 import torch
@@ -15,7 +17,11 @@ class FlowGuard:
     def predict(self, flow_features):
         with torch.no_grad():
             flow_tensor = torch.tensor(flow_features, dtype=torch.float32)
-            output = self.model(flow_tensor)
+            if hasattr(self.model, "input_shift"):
+                # integer model: quantize the input and scale the integer output back to a logit
+                output = self.model(quantize_input(self.model, flow_tensor)) / 2**self.model.layers[-1].output_shift
+            else:
+                output = self.model(flow_tensor)
             prediction = torch.sigmoid(output).item()
             return prediction
 
@@ -41,7 +47,7 @@ def main():
     random_start_index = random.randint(0, len(test_data)-args.sample_number)
 
     test_data_normalized = normalize_training_data(test_data)[random_start_index:random_start_index+args.sample_number]
-    x_test = test_data_normalized[["Number of Packets (Scaled to 1000000)", "Source Port", "Destination Port", "Average Packet Size", "Minimum Packet Size", "Maximum Packet Size", "Total Bytes", "IAT Min", "IAT Max", "IAT Mean"]].to_numpy()
+    x_test = test_data_normalized[FEATURE_COLUMNS].to_numpy()
     
     num_malicious = 0
     num_benign = 0
