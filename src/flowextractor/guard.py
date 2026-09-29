@@ -17,9 +17,9 @@ class FlowGuard:
     def predict(self, flow_features):
         with torch.no_grad():
             flow_tensor = torch.tensor(flow_features, dtype=torch.float32)
-            if hasattr(self.model, "input_shift"):
+            if hasattr(self.model, "input_scale"):
                 # integer model: quantize the input and scale the integer output back to a logit
-                output = self.model(quantize_input(self.model, flow_tensor)) / 2**self.model.layers[-1].output_shift
+                output = self.model(quantize_input(self.model, flow_tensor)) / self.model.layers[-1].output_scale
             else:
                 output = self.model(flow_tensor)
             prediction = torch.sigmoid(output).item()
