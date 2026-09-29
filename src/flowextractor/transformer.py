@@ -154,14 +154,8 @@ def main():
     mt = ModelTransformer()
 
     quantized_model = mt.transform(model, getattr(torch, args.dtype), x)
+    print(quantized_model)
 
-    with torch.no_grad():
-        agreement = 0
-        for i in tqdm.tqdm(range(x.size(0)//1000)):
-            agreement += ((model(x[i:i+1]) > 0) == (quantized_model(quantize_input(quantized_model, x[i:i+1])) > 0)).float().item()
-        agreement /= x.size(0)
-        agreement = agreement * 100
-    print(f"agreement with float model: {agreement:.2f} %")
     torch.save(quantized_model, args.output_path)
 
     if args.plot:
