@@ -124,6 +124,9 @@ class FlowTableManager:
         if number_of_flows_written > 0:
             print(colored.fg("green") + f"{number_of_flows_written} flow vectors written to {file_path}" + colored.attr("reset"))
 
+    def clear_flow_table(self):
+        self.flow_table = {}
+
 class Flow:
     def __init__(self, flow_hash=None, src_ip=None, dst_ip=None, src_port=None, dst_port=None):
         self.src_ip = src_ip
