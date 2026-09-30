@@ -1,4 +1,4 @@
-from flowextractor.model import *
+from flowextractor.model.model import *
 from flowextractor.flow import *
 from flowextractor.transformer import quantize_input
 import argparse

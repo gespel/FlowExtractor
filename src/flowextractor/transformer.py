@@ -5,7 +5,7 @@ import pandas
 import tqdm
 import torch
 import matplotlib.pyplot as plt
-from flowextractor.model import *
+from flowextractor.model.model import *
 
 QMAX = {
     torch.int8: 127, 

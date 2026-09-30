@@ -17,7 +17,7 @@ dependencies = [
 [project.scripts]
 flowextractor = "flowextractor.main:main"
 flowrecorder = "flowextractor.recorder:main"
-flowmodel = "flowextractor.model:main"
+flowmodel = "flowextractor.model.model:main"
 flowguard = "flowextractor.guard:main"
 flowtransformer = "flowextractor.transformer:main"
 
