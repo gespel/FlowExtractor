@@ -6,7 +6,7 @@ import colored
 import subprocess
 import sys
 import logging
-from flowextractor.flow import FlowTableManager
+from flowextractor.dataset.flow import FlowTableManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("FlowRecorder")

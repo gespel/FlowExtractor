@@ -2,8 +2,10 @@ import os
 import colored
 from scapy.layers.inet import IP, TCP, UDP
 import pandas as pd
-from flowextractor import sshd_log, slowloris
+from flowextractor.dataset import sshd_log
 import time
+
+from flowextractor.dataset import slowloris
 
 def calculate_packet_hash(packet):
     if not packet.haslayer(IP) or (not packet.haslayer(TCP) and not packet.haslayer(UDP)):

@@ -1,6 +1,6 @@
 from flowextractor.model.model import *
-from flowextractor.flow import *
-from flowextractor.transformer import quantize_input
+from flowextractor.dataset.flow import *
+from flowextractor.model.transformer import quantize_input
 import argparse
 import pandas
 import torch

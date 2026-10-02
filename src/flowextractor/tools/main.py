@@ -1,7 +1,7 @@
 from scapy.utils import PcapReader
 from scapy.layers.inet import IP, TCP, UDP
 import argparse
-from flowextractor.flow import FlowTableManager
+from flowextractor.dataset.flow import FlowTableManager
 from tqdm import tqdm
 
 def read_pcap(file_path):
