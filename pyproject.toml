@@ -15,11 +15,11 @@ dependencies = [
 ]
 
 [project.scripts]
-flowextractor = "flowextractor.main:main"
-flowrecorder = "flowextractor.recorder:main"
+flowextractor = "flowextractor.tools.main:main"
+flowrecorder = "flowextractor.tools.recorder:main"
 flowmodel = "flowextractor.model.model:main"
-flowguard = "flowextractor.guard:main"
-flowtransformer = "flowextractor.transformer:main"
+flowguard = "flowextractor.tools.guard:main"
+flowtransformer = "flowextractor.model.transformer:main"
 
 [build-system]
 requires = ["hatchling"]
