@@ -80,7 +80,7 @@ def main():
     m = AttackDetectionNet()
     print(m)
     m.train(list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_train], [torch.tensor(yi, dtype=torch.float32) for yi in y_train])), batch_size=args.batch_size, epochs=args.epochs)
-    validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test], [torch.tensor(yi, dtype=torch.float32) for yi in y_test]))
+    validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test[:10000]], [torch.tensor(yi, dtype=torch.float32) for yi in y_test[:10000]]))
     print(f"Validation data prepared with {len(validation_data)} samples.")
 
     torch.save(m, f"{time.strftime('%Y%m%d-%H%M%S')}.pt")
