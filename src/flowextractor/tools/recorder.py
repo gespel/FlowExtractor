@@ -72,7 +72,7 @@ def main():
     if os.geteuid() != 0:
         logger.info("This script requires root privileges. Re-running with sudo...")
         subprocess.run(["uv", "sync"])
-        subprocess.run(["sudo", ".venv/bin/python3", "-m", "src.flowextractor.recorder"] + sys.argv[1:])
+        subprocess.run(["sudo", ".venv/bin/python3", "-m", "src.flowextractor.tools.recorder"] + sys.argv[1:])
         return
     arg_parser = argparse.ArgumentParser(description="Record packets for a specified duration.")
     arg_parser.add_argument("--record_length", type=int, help="Length of time to record packets in seconds")
