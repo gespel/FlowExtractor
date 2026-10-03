@@ -42,8 +42,8 @@ class PacketRecorder:
                 logger.info(f"Recorded {colored.fg('green')}{len(self.packets)}{colored.attr('reset')} packets at {colored.fg('magenta')}{readable_timestamp}{colored.attr('reset')}")
 
                 flow_table.add_packets(self.packets)
-                flow_table.label_ssh_flows()
-                #flow_table.label_slowloris_flows(attacker_ip)
+                #flow_table.label_ssh_flows()
+                flow_table.label_slowloris_flows(attacker_ip)
 
                 #if i % 10 == 0:
                 #    flow_table.print_flow_table_summary()
