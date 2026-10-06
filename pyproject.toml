@@ -19,7 +19,8 @@ flowextractor = "flowextractor.tools.main:main"
 flowrecorder = "flowextractor.tools.recorder:main"
 flowmodel = "flowextractor.model.model:main"
 flowguard = "flowextractor.tools.guard:main"
-flowtransformer = "flowextractor.model.transformer:main"
+modeltransformer = "flowextractor.model.transformer:main"
+benignssh = "flowextractor.generators.benign_ssh:main"
 
 [build-system]
 requires = ["hatchling"]

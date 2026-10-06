@@ -24,7 +24,7 @@ class PacketRecorder:
         else:
             logger.info("No packets to save.")
 
-    def record(self, length: int, save_output: bool):
+    def record(self, length: int, save_output: bool, mode: str):
         flow_table = FlowTableManager()
         i = 0
 
@@ -42,8 +42,12 @@ class PacketRecorder:
                 logger.info(f"Recorded {colored.fg('green')}{len(self.packets)}{colored.attr('reset')} packets at {colored.fg('magenta')}{readable_timestamp}{colored.attr('reset')}")
 
                 flow_table.add_packets(self.packets)
-                #flow_table.label_ssh_flows()
-                flow_table.label_slowloris_flows(attacker_ip)
+                if mode == "ssh_brute":
+                    flow_table.label_ssh_flows()
+                elif mode == "slowloris":
+                    flow_table.label_slowloris_flows(attacker_ip)
+                else:
+                    logger.warning("No attack specified. All traffic will be marked as benign!")
 
                 #if i % 10 == 0:
                 #    flow_table.print_flow_table_summary()
@@ -77,6 +81,7 @@ def main():
     arg_parser = argparse.ArgumentParser(description="Record packets for a specified duration.")
     arg_parser.add_argument("--record_length", type=int, help="Length of time to record packets in seconds")
     arg_parser.add_argument("--save_output", type=bool, help="Whether to save the recorded packets to a file")
+    arg_parser.add_argument("--mode", type=str, help="Defines the mode of operation for flow recording")
     args = arg_parser.parse_args()
 
     recorder = PacketRecorder()
