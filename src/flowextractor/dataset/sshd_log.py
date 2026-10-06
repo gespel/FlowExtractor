@@ -11,9 +11,7 @@ _ACCEPTED_RE = re.compile(r"Accepted \w+ for.* from (\S+)")
 
 
 def _sshd_auth_stats(since, until):
-    cmd = ["journalctl", "-u", "sshd", "-o", "json",
-           "--since", since.strftime("%Y-%m-%d %H:%M:%S"),
-           "--until", until.strftime("%Y-%m-%d %H:%M:%S")]
+    cmd = ["journalctl", "-u", "sshd", "-o", "json", "--since", since.strftime("%Y-%m-%d %H:%M:%S"), "--until", until.strftime("%Y-%m-%d %H:%M:%S")]
     try:
         output = subprocess.run(cmd, capture_output=True, text=True, timeout=10, check=True).stdout
     except (subprocess.SubprocessError, OSError):
