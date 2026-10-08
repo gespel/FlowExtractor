@@ -1,5 +1,7 @@
 import paramiko
 import random
+import argparse
+import time
 
 BENIGN_COMMANDS = ["ls", "pwd", "whoami", "uptime", "date", "echo 'Hello, World!'", "df -h", "free -m", "cat /etc/os-release", "uname -a"]
 
@@ -27,9 +29,14 @@ class BenignSSHGenerator:
 
 
 def main():
+    argparser = argparse.ArgumentParser(description="Generate benign SSH traffic.")
+    argparser.add_argument("--target", type=str, default="sten-heimbrodt.de", help="Target SSH server to connect to.")
+    argparser.add_argument("--username", type=str, default="sten", help="Username for SSH connection.")
+    argparser.add_argument("--interval", type=int, default=5, help="Interval in seconds between generating traffic.")
+    args = argparser.parse_args()
     generator = BenignSSHGenerator()
     while True:
-        generator.generate_benign_ssh_traffic("sten-heimbrodt.de", "sten")
-
+        generator.generate_benign_ssh_traffic(args.target, args.username)
+        time.sleep(args.interval)
 if __name__ == "__main__":
     main()
