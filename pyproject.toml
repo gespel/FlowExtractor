@@ -10,6 +10,7 @@ dependencies = [
     "pandas>=3.0.5",
     "paramiko>=5.0.0",
     "scapy>=2.7.0",
+    "termcolor>=3.3.0",
     "torch>=2.14.0",
     "tqdm>=4.70.0",
     "triton-rocm>=3.8.0 ; sys_platform == 'linux'",

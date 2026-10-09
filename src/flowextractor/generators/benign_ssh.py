@@ -2,6 +2,7 @@ import paramiko
 import random
 import argparse
 import time
+import termcolor
 
 BENIGN_COMMANDS = ["ls", "pwd", "whoami", "uptime", "date", "echo 'Hello, World!'", "df -h", "free -m", "cat /etc/os-release", "uname -a"]
 
@@ -15,14 +16,16 @@ class BenignSSHGenerator:
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
             ssh.connect(target, username=username)
-            number_of_commands = random.randint(1, 50)
-
+            print(termcolor.colored(f"Connected to {target} as {username}. Generating benign SSH traffic...", "green"))
+            number_of_commands = random.randint(1, 10)
+            print(termcolor.colored(f"Executing {number_of_commands} benign commands on {target}...", "green"))
             for i in range(number_of_commands):
                 command = random.choice(BENIGN_COMMANDS)
+                print(termcolor.colored(f"Executing command '{command}' on {target}...", "green"))
                 stdin, stdout, stderr = ssh.exec_command(command)
                 output = stdout.read().decode()
-                print(f"Output from {target} for command '{command}':\n{output}")
-                time.sleep(random.randint(1, 10))
+                print(f"Output from {target} for command '{command}':\n{output.strip()}")
+                time.sleep(random.randint(1, 5))
             ssh.close()
 
         except Exception as e:
@@ -33,7 +36,7 @@ def main():
     argparser = argparse.ArgumentParser(description="Generate benign SSH traffic.")
     argparser.add_argument("--target", type=str, default="sten-heimbrodt.de", help="Target SSH server to connect to.")
     argparser.add_argument("--username", type=str, default="sten", help="Username for SSH connection.")
-    argparser.add_argument("--interval", type=int, default=5, help="Interval in seconds between generating traffic.")
+    argparser.add_argument("--interval", type=int, default=60, help="Interval in seconds between generating traffic.")
     args = argparser.parse_args()
     generator = BenignSSHGenerator()
     while True:
