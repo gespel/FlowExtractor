@@ -22,6 +22,7 @@ class BenignSSHGenerator:
                 stdin, stdout, stderr = ssh.exec_command(command)
                 output = stdout.read().decode()
                 print(f"Output from {target} for command '{command}':\n{output}")
+                time.sleep(random.randint(1, 10))
             ssh.close()
 
         except Exception as e:
