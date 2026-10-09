@@ -54,7 +54,7 @@ def print_metrics(name, y_true, y_pred):
     TN = int(((y_true == 0) & (y_pred == 0)).sum())
     FN = int(((y_true == 1) & (y_pred == 0)).sum())
     overall = TP + FP + TN + FN
-    print(f"--- {name} ({overall} samples) ---")
+    print(f"-> {name} ({overall} samples)")
     if overall == 0:
         print("No validation data available.")
         return
