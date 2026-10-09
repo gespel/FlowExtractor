@@ -17,10 +17,10 @@ def calculate_packet_hash(packet):
 
     src_ip = ip_layer.src
     dst_ip = ip_layer.dst
-    #src_port = layer_4.sport
+    src_port = layer_4.sport
     dst_port = layer_4.dport
 
-    flow_string = f"{src_ip}{dst_ip}{dst_port}"
+    flow_string = f"{src_ip}{dst_ip}{src_port}{dst_port}"
     hash_value = hash(flow_string)
 
     return hash_value

@@ -25,10 +25,11 @@ class AttackDetectionNet(torch.nn.Module):
     def forward(self, x):
         return self.layers(x)
 
-    def train(self, training_data, epochs=200, learning_rate=0.001, batch_size=32):
+    def fit(self, training_data, epochs=200, learning_rate=0.001, batch_size=32):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Training on {device}.")
         self.to(device)
+        self.train()
         optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         loss_fn = torch.nn.BCEWithLogitsLoss()
         dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
@@ -44,7 +45,28 @@ class AttackDetectionNet(torch.nn.Module):
                 total_loss += loss.item()
             tqdm.tqdm.write(f"Epoch {epoch+1}/{epochs} completed. average loss: {total_loss/len(dataloader)}")
         self.to("cpu")
+        self.eval()
         print("Training finished.")
+
+def print_metrics(name, y_true, y_pred):
+    TP = int(((y_true == 1) & (y_pred == 1)).sum())
+    FP = int(((y_true == 0) & (y_pred == 1)).sum())
+    TN = int(((y_true == 0) & (y_pred == 0)).sum())
+    FN = int(((y_true == 1) & (y_pred == 0)).sum())
+    overall = TP + FP + TN + FN
+    print(f"--- {name} ({overall} samples) ---")
+    if overall == 0:
+        print("No validation data available.")
+        return
+    print(f"TP: {TP} ({TP/overall * 100:.2f} %), FP: {FP} ({FP/overall * 100:.2f} %), TN: {TN} ({TN/overall * 100:.2f} %), FN: {FN} ({FN/overall * 100:.2f} %)")
+    precision = TP / (TP + FP) if TP + FP > 0 else None
+    recall = TP / (TP + FN) if TP + FN > 0 else None
+    print(f"Precision: {precision * 100:.2f} %" if precision is not None else "Precision: N/A (No positive predictions)")
+    print(f"Recall: {recall * 100:.2f} %" if recall is not None else "Recall: N/A (No actual positives)")
+    if not precision or not recall:
+        print("F1 Score: N/A (Cannot compute F1 score)")
+    else:
+        print(f"F1 Score: {2 * precision * recall / (precision + recall) * 100:.2f} %")
 
 def normalize_training_data(df):
     ndf = df[FEATURE_COLUMNS + ["Label", "Attack Type"]].copy()
@@ -63,68 +85,43 @@ def main():
     argparser.add_argument("--batch_size", type=int, default=32, help="Batch size used during training.")
     argparser.add_argument("--epochs", type=int, default=20, help="Number of Epochs used for training")
     argparser.add_argument("--dry_run", action="store_true", help="If set, the script will train the model but will not save it.")
+    argparser.add_argument("--seed", type=int, default=None, help="Random seed for reproducible training.")
     args = argparser.parse_args()
 
-    training_data = normalize_training_data(pandas.read_csv(args.feature_csv))
+    if args.seed is not None:
+        torch.manual_seed(args.seed)
+
+    raw_data = pandas.read_csv(args.feature_csv)
+    training_data = normalize_training_data(raw_data)
     print(training_data.info())
 
-    x_df = training_data[FEATURE_COLUMNS]
-    y_df = training_data["Label"]
+    x = torch.tensor(training_data[FEATURE_COLUMNS].to_numpy(), dtype=torch.float32)
+    y = torch.tensor((training_data["Label"] == "malicious").to_numpy(), dtype=torch.float32)
+    is_ssh = torch.tensor(((raw_data["Source Port"] == 22) | (raw_data["Destination Port"] == 22)).to_numpy())
 
-    x = [xi.tolist() for xi in x_df.to_numpy()]
-    y = [1 if i == "malicious" else 0 for i in y_df]
-
-    print(f"{x_df.info()}\n")
-    print(y_df.head())
-
-    X_train, X_test = x[:int(len(x)*0.8)], x[int(len(x)*0.8):]
-    y_train, y_test = y[:int(len(y)*0.8)], y[int(len(y)*0.8):]
+    # chronological split: flows are appended to the csv in recording order
+    split = int(len(x) * 0.8)
+    X_train, X_test = x[:split], x[split:]
+    y_train, y_test = y[:split], y[split:]
+    ssh_test = is_ssh[split:]
+    print(f"Train: {len(y_train)} samples ({int(y_train.sum())} malicious), Test: {len(y_test)} samples ({int(y_test.sum())} malicious)")
 
     m = AttackDetectionNet()
     print(m)
-    m.train(list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_train], [torch.tensor(yi, dtype=torch.float32) for yi in y_train])), batch_size=args.batch_size, epochs=args.epochs)
-    validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test[:10000]], [torch.tensor(yi, dtype=torch.float32) for yi in y_test[:10000]]))
-    print(f"Validation data prepared with {len(validation_data)} samples.")
+    m.fit(list(zip(X_train, y_train)), batch_size=args.batch_size, epochs=args.epochs)
 
     if not args.dry_run:
         torch.save(m, f"{time.strftime('%Y%m%d-%H%M%S')}.pt")
 
-    dl = DataLoader(validation_data, batch_size=args.batch_size, num_workers=4)
-    results = []
-    for batch in dl:
-        x_batch, y_batch = batch
-        for x, y in zip(x_batch, y_batch):
-            y_pred = m.forward(x)
-            results.append((x, y, y_pred))
-
-    #for x, y, y_pred in results:
-    #    print(f"True Label: {y} Predicted: {torch.sigmoid(y_pred)}")
-
     CUTOFF_VALUE = 0.5
 
-    overall = len(results)
-    TP = [1 if y == 1 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
-    FP = [1 if y == 0 and torch.sigmoid(y_pred) >= CUTOFF_VALUE else 0 for x, y, y_pred in results]
-    TN = [1 if y == 0 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
-    FN = [1 if y == 1 and torch.sigmoid(y_pred) < CUTOFF_VALUE else 0 for x, y, y_pred in results]
+    with torch.no_grad():
+        y_pred = (torch.sigmoid(m(X_test).squeeze(1)) >= CUTOFF_VALUE).int()
+    y_true = y_test.int()
 
-    if overall == 0:
-        print("No validation data available.")
-        return
-    print(f"TP: {sum(TP)} ({sum(TP)/overall * 100:.2f} %), FP: {sum(FP)} ({sum(FP)/overall * 100:.2f} %), TN: {sum(TN)} ({sum(TN)/overall * 100:.2f} %), FN: {sum(FN)} ({sum(FN)/overall * 100:.2f} %)")
-    if sum(TP)+sum(FP) == 0:
-        print("Precision: N/A (No positive predictions)")
-    else:
-        print(f"Precision: {sum(TP)/(sum(TP)+sum(FP)) * 100:.2f} %")
-    if sum(TP)+sum(FN) == 0:
-        print("Recall: N/A (No actual positives)")
-    else:
-        print(f"Recall: {sum(TP)/(sum(TP)+sum(FN)) * 100:.2f} %")
-    if sum(TP)+sum(FP) == 0 or sum(TP)+sum(FN) == 0:
-        print("F1 Score: N/A (Cannot compute F1 score)")
-    else:
-        print(f"F1 Score: {2 * (sum(TP)/(sum(TP)+sum(FP))) * (sum(TP)/(sum(TP)+sum(FN))) / ((sum(TP)/(sum(TP)+sum(FP))) + (sum(TP)/(sum(TP)+sum(FN)))) * 100:.2f} %")
-    print(f"False Negatives: {sum(FN)/(sum(FN)+sum(TP)+sum(FP)+sum(TN)) * 100:.2f} %")
+    print_metrics("All flows", y_true, y_pred)
+    print_metrics("SSH flows only", y_true[ssh_test], y_pred[ssh_test])
+    print_metrics("Baseline: port 22 => malicious", y_true, ssh_test.int())
 
 
 if __name__ == "__main__":
