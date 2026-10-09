@@ -62,6 +62,7 @@ def main():
     argparser.add_argument("--feature_csv", type=str, default="flow_vectors.csv", help="Path to the CSV file containing flow features.")
     argparser.add_argument("--batch_size", type=int, default=32, help="Batch size used during training.")
     argparser.add_argument("--epochs", type=int, default=20, help="Number of Epochs used for training")
+    argparser.add_argument("--dry_run", action="store_true", help="If set, the script will train the model but will not save it.")
     args = argparser.parse_args()
 
     training_data = normalize_training_data(pandas.read_csv(args.feature_csv))
@@ -85,7 +86,8 @@ def main():
     validation_data = list(zip([torch.tensor(xi, dtype=torch.float32) for xi in X_test[:10000]], [torch.tensor(yi, dtype=torch.float32) for yi in y_test[:10000]]))
     print(f"Validation data prepared with {len(validation_data)} samples.")
 
-    torch.save(m, f"{time.strftime('%Y%m%d-%H%M%S')}.pt")
+    if not args.dry_run:
+        torch.save(m, f"{time.strftime('%Y%m%d-%H%M%S')}.pt")
 
     dl = DataLoader(validation_data, batch_size=args.batch_size, num_workers=4)
     results = []

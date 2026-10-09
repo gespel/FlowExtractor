@@ -167,15 +167,9 @@ class Flow:
             iat = packet.time - self.last_packet_time
             self.iat_min = min(self.iat_min, iat)
             self.iat_max = max(self.iat_max, iat)
-            if self.number_of_packets > 2:
-                self.iat_mean = ((self.iat_mean * (self.number_of_packets - 1)) + iat) / self.number_of_packets
-            else:
-                self.iat_mean = iat
-        else:
-            self.iat_min = float('inf')
-            self.iat_max = 0
-            self.iat_mean = 0
-            self.last_packet_time = packet.time
+            number_of_iats = self.number_of_packets - 1
+            self.iat_mean = ((self.iat_mean * (number_of_iats - 1)) + iat) / number_of_iats
+        self.last_packet_time = packet.time
 
     def build_feature_vector(self):
         out_vector = [
