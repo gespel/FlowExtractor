@@ -85,7 +85,7 @@ def main():
     args = arg_parser.parse_args()
 
     recorder = PacketRecorder()
-    recorder.record(length=args.record_length, save_output=args.save_output)
+    recorder.record(length=args.record_length, save_output=args.save_output, mode=args.mode)
 
 if __name__ == "__main__":
     main()
