@@ -130,12 +130,14 @@ def main():
             y_pred = (torch.sigmoid(m(X_test).squeeze(1)) >= CUTOFF_VALUE).int()
         y_true = y_test.int()
 
-        print_metrics("All flows", y_true, y_pred)
-        print_metrics("SSH flows only", y_true[ssh_test], y_pred[ssh_test])
-        print_metrics("Baseline: port 22 => malicious", y_true, ssh_test.int())
+        print_metrics("All flows", y_true, y_pred, telegram_bot=tb)
+        print_metrics("SSH flows only", y_true[ssh_test], y_pred[ssh_test], telegram_bot=tb)
+        print_metrics("Baseline: port 22 => malicious", y_true, ssh_test.int(), telegram_bot=tb)
 
         if not args.loop:
             break
+
+        time.sleep(1800)
 
 
 if __name__ == "__main__":
