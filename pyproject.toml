@@ -9,6 +9,7 @@ dependencies = [
     "matplotlib>=3.11.2",
     "pandas>=3.0.5",
     "paramiko>=5.0.0",
+    "requests>=2.34.2",
     "scapy>=2.7.0",
     "termcolor>=3.3.0",
     "torch>=2.14.0",
