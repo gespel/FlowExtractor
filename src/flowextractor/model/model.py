@@ -108,13 +108,13 @@ def main():
 
         x = torch.tensor(training_data[FEATURE_COLUMNS].to_numpy(), dtype=torch.float32)
         y = torch.tensor((training_data["Label"] == "malicious").to_numpy(), dtype=torch.float32)
-        is_ssh = torch.tensor(((raw_data["Source Port"] == 22) | (raw_data["Destination Port"] == 22)).to_numpy())
+        #is_ssh = torch.tensor(((raw_data["Source Port"] == 22) | (raw_data["Destination Port"] == 22)).to_numpy())
 
         # chronological split: flows are appended to the csv in recording order
         split = int(len(x) * 0.8)
         X_train, X_test = x[:split], x[split:]
         y_train, y_test = y[:split], y[split:]
-        ssh_test = is_ssh[split:]
+        #ssh_test = is_ssh[split:]
         print(f"Train: {len(y_train)} samples ({int(y_train.sum())} malicious), Test: {len(y_test)} samples ({int(y_test.sum())} malicious)")
 
         m = AttackDetectionNet()
@@ -131,8 +131,8 @@ def main():
         y_true = y_test.int()
 
         print_metrics("All flows", y_true, y_pred, telegram_bot=tb)
-        print_metrics("SSH flows only", y_true[ssh_test], y_pred[ssh_test], telegram_bot=tb)
-        print_metrics("Baseline: port 22 => malicious", y_true, ssh_test.int(), telegram_bot=tb)
+        #print_metrics("SSH flows only", y_true[ssh_test], y_pred[ssh_test], telegram_bot=tb)
+        #print_metrics("Baseline: port 22 => malicious", y_true, ssh_test.int(), telegram_bot=tb)
 
         if not args.loop:
             break
