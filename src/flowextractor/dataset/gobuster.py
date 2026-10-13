@@ -1,0 +1,5 @@
+def label_gobuster_flows(flows, attacker_ip):
+    for flow in flows:
+        if flow.src_ip == attacker_ip or flow.dst_ip == attacker_ip:
+            flow.label = "malicious"
+            flow.attack_type = "gobuster_scan"

@@ -46,6 +46,8 @@ class PacketRecorder:
                     flow_table.label_ssh_flows()
                 elif mode == "slowloris":
                     flow_table.label_slowloris_flows(attacker_ip)
+                elif mode == "gobuster":
+                    flow_table.label_gobuster_flows(attacker_ip)
                 else:
                     logger.warning("No attack specified. All traffic will be marked as benign!")
 

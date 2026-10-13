@@ -4,7 +4,7 @@ from scapy.layers.inet import IP, TCP, UDP
 import pandas as pd
 from flowextractor.dataset import sshd_log
 import time
-
+from flowextractor.dataset import gobuster
 from flowextractor.dataset import slowloris
 
 def calculate_packet_hash(packet):
@@ -57,6 +57,9 @@ class FlowTableManager:
 
     def label_slowloris_flows(self, attacker_ip):
         slowloris.label_slowloris_flows(self.flow_table.values(), attacker_ip)
+
+    def label_gobuster_flows(self, attacker_ip):
+        gobuster.label_gobuster_flows(self.flow_table.values(), attacker_ip)
 
     def print_flow_table(self):
         nr_single_packet_flows = 0
